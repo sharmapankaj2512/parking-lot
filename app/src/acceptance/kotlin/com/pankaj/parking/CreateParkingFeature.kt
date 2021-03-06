@@ -5,20 +5,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import java.util.concurrent.TimeUnit
 
 @Nested
-class CreateParkingFixture {
-    private val reader = MockReader()
-    private val writer = MockWriter()
-    private val app = TestApp(reader, writer)
-
-    @BeforeEach
-    fun beforeEach() {
-        app.start()
-    }
-
-    @AfterEach
-    fun afterEach() {
-        app.stop()
-    }
+class CreateParkingFeature: FeatureSetup() {
 
     @Nested
     @DisplayName("Given no parking lot exists")

@@ -9,6 +9,7 @@ class CommandProcessor(
         val command = reader().toLowerCase()
         when {
             CREATE_COMMAND.matches(command) -> processCreateCommand(command)
+            PARK_COMMAND.matches(command) -> processParkCommand(command)
         }
     }
 
@@ -21,8 +22,18 @@ class CommandProcessor(
         }
     }
 
+    private fun processParkCommand(command: String) {
+        PARK_COMMAND.matchEntire(command)?.let { result ->
+            val (registrationNumber, color) = result.destructured
+            kotlin.runCatching { parkingLot?.park(Car(registrationNumber, color)) }
+                .onSuccess { slotNumber -> slotNumber?.let { writer(Messages.SLOT_ALLOCATED(it)) } }
+                .onFailure { writer(it.message!!) }
+            }
+        }
+
     companion object {
         private val CREATE_COMMAND = """^create_parking_lot\s+(-?[0-9]+)$""".toRegex()
+        private val PARK_COMMAND = """^park\s+(.+)\s+(\bwhite\b|\bblack\b)$""".toRegex()
         private var parkingLot: ParkingLot? = null
     }
 }
