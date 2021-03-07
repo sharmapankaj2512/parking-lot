@@ -11,5 +11,5 @@ class App(reader: () -> String, writer: (String) -> Unit) {
 }
 
 fun main() {
-
+    App({ readLine()!! }, {text: String -> println(text)}).start()
 }
