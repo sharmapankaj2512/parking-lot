@@ -19,6 +19,11 @@ class ParkingLot(val numberOfSlots: Int) {
         return slots.filterNot { it.isAvailable() }.map { it.status() }
     }
 
+    fun leave(slotNumber: Int) {
+        require(slotNumber in 0..numberOfSlots) { Messages.INVALID_SLOT_NUMBER }
+        slots.find { it.number == slotNumber }?.leave()
+    }
+
     inner class ParkingSlot(val number: Int, var car: Car? = null) {
         fun isAvailable(): Boolean {
             return car == null
@@ -31,6 +36,10 @@ class ParkingLot(val numberOfSlots: Int) {
 
         fun status(): Triple<Int, String, String> {
             return Triple(number, car!!.registrationNumber, car!!.color.toString())
+        }
+
+        fun leave() {
+            this.car = null
         }
     }
 }

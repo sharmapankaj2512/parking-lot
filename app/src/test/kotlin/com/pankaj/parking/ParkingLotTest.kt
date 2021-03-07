@@ -43,4 +43,27 @@ class ParkingLotTest {
 
         assertEquals(listOf(Triple(1, "MH-10-G-4444", "White")), parkingLot.status())
     }
+
+    @Test
+    fun `frees occupied slot on leave slot`() {
+        val parkingLot = ParkingLot(1)
+        parkingLot.park(Car("MH-10-G-4444", Color.White))
+        parkingLot.leave(1)
+
+        assertTrue(parkingLot.isAvailable(1))
+    }
+
+    @Test
+    fun `throws exception on leave slot when the provided slot number is negative`() {
+        val parkingLot = ParkingLot(1)
+
+        assertThrows(IllegalArgumentException::class.java) { parkingLot.leave(-1) }
+    }
+
+    @Test
+    fun `throws exception on leave slot when the provided slot number is greater than the max range`() {
+        val parkingLot = ParkingLot(1)
+
+        assertThrows(IllegalArgumentException::class.java) { parkingLot.leave(3) }
+    }
 }

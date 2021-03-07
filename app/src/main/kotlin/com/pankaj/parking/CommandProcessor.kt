@@ -12,6 +12,7 @@ class CommandProcessor(
             CREATE_COMMAND.matches(command) -> processCreateCommand(command)
             PARK_COMMAND.matches(command) -> processParkCommand(command)
             STATUS_COMMAND.matches(command) -> processStatusCommand(command)
+            LEAVE_COMMAND.matches(command) -> processLeaveCommand(command)
         }
     }
 
@@ -39,9 +40,19 @@ class CommandProcessor(
         }
     }
 
+    private fun processLeaveCommand(command: String) {
+        LEAVE_COMMAND.matchEntire(command)?.let { result ->
+            val (slotNumber) = result.destructured
+            kotlin.runCatching { parkingLot?.leave(slotNumber.toInt()) }
+                .onSuccess { writer(Messages.SLOT_FREED(slotNumber.toInt())) }
+                .onFailure { writer(Messages.INVALID_SLOT_NUMBER) }
+        }
+    }
+
     companion object {
         private val CREATE_COMMAND = """^create_parking_lot\s+(-?[0-9]+)$""".toRegex()
         private val PARK_COMMAND = """^park\s+(.+)\s+(\bwhite\b|\bblack\b)$""".toRegex()
+        private val LEAVE_COMMAND = """^leave\s+(-?[0-9]+)$""".toRegex()
         private val STATUS_COMMAND = """status""".toRegex()
         private var parkingLot: ParkingLot? = null
     }
