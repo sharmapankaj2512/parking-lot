@@ -3,13 +3,15 @@ package com.pankaj.parking
 class CommandProcessor(
     private val reader: () -> String,
     private val writer: (String) -> Unit,
-    private val parkingLotFactory: ParkingLotFactory) {
+    private val parkingLotFactory: ParkingLotFactory
+) {
 
     fun process() {
         val command = reader().toLowerCase()
         when {
             CREATE_COMMAND.matches(command) -> processCreateCommand(command)
             PARK_COMMAND.matches(command) -> processParkCommand(command)
+            STATUS_COMMAND.matches(command) -> processStatusCommand(command)
         }
     }
 
@@ -17,7 +19,7 @@ class CommandProcessor(
         CREATE_COMMAND.matchEntire(command)?.let { result ->
             val (numberOfSlots) = result.destructured
             kotlin.runCatching { parkingLot = parkingLotFactory.make(numberOfSlots.toInt()) }
-                .onSuccess { writer( Messages.PARKING_LOT_CREATED(parkingLot!!.numberOfSlots)) }
+                .onSuccess { writer(Messages.PARKING_LOT_CREATED(parkingLot!!.numberOfSlots)) }
                 .onFailure { writer(it.message!!) }
         }
     }
@@ -28,12 +30,19 @@ class CommandProcessor(
             kotlin.runCatching { parkingLot?.park(Car(registrationNumber, color)) }
                 .onSuccess { slotNumber -> slotNumber?.let { writer(Messages.SLOT_ALLOCATED(it)) } }
                 .onFailure { writer(it.message!!) }
-            }
         }
+    }
+
+    private fun processStatusCommand(command: String) {
+        STATUS_COMMAND.matchEntire(command)?.let {
+            writer(parkingLot?.statusReport() ?: "")
+        }
+    }
 
     companion object {
         private val CREATE_COMMAND = """^create_parking_lot\s+(-?[0-9]+)$""".toRegex()
         private val PARK_COMMAND = """^park\s+(.+)\s+(\bwhite\b|\bblack\b)$""".toRegex()
+        private val STATUS_COMMAND = """status""".toRegex()
         private var parkingLot: ParkingLot? = null
     }
 }

@@ -5,7 +5,6 @@ import io.mockk.mockk
 import io.mockk.slot
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import java.lang.IllegalArgumentException
 
 class CommandProcessorTest {
     private val reader = MockReader()
@@ -66,5 +65,25 @@ class CommandProcessorTest {
         processor.process()
 
         assertEquals(Messages.PARKING_FULL, writer.capturedOutput)
+    }
+
+    @Test
+    fun `parses status command`() {
+        val parkingLot = mockk<ParkingLot>()
+        val capturedCar = slot<Car>()
+
+        every { parkingLotFactory.make(any()) } returns parkingLot
+        every { parkingLot.numberOfSlots } returns 1
+        every { parkingLot.park(capture(capturedCar)) } returns 1
+        every { parkingLot.status() } returns listOf(Triple(1, "MH-10-G-1000", "white"))
+
+        reader.createParkingLot(1)
+        reader.parkCar("MH-10-G-1000", "white")
+        reader.showStatus()
+        processor.process()
+        processor.process()
+        processor.process()
+
+        assertEquals("Slot No.\tRegistration No\tColor\n1\tMH-10-G-1000\twhite", writer.capturedOutput)
     }
 }

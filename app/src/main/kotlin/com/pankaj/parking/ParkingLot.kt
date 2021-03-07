@@ -1,7 +1,5 @@
 package com.pankaj.parking
 
-import java.lang.IllegalArgumentException
-
 class ParkingLot(val numberOfSlots: Int) {
     private val slots = (1..numberOfSlots).map { ParkingSlot(it) }
 
@@ -17,6 +15,10 @@ class ParkingLot(val numberOfSlots: Int) {
         return slots.find { it.number == slotNumber }?.isAvailable() ?: false
     }
 
+    fun status(): List<Triple<Int, String, String>> {
+        return slots.filterNot { it.isAvailable() }.map { it.status() }
+    }
+
     inner class ParkingSlot(val number: Int, var car: Car? = null) {
         fun isAvailable(): Boolean {
             return car == null
@@ -25,6 +27,10 @@ class ParkingLot(val numberOfSlots: Int) {
         fun park(car: Car): Int {
             this.car = car
             return number
+        }
+
+        fun status(): Triple<Int, String, String> {
+            return Triple(number, car!!.registrationNumber, car!!.color.toString())
         }
     }
 }
