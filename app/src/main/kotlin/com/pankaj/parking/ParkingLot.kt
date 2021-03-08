@@ -24,6 +24,10 @@ class ParkingLot(val numberOfSlots: Int) {
         slots.find { it.number == slotNumber }?.leave()
     }
 
+    fun hasAvailableSlot(): Boolean {
+        return slots.any { it.isAvailable() }
+    }
+
     inner class ParkingSlot(val number: Int, var car: Car? = null) {
         fun isAvailable(): Boolean {
             return car == null

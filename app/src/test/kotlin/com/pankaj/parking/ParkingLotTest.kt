@@ -66,4 +66,18 @@ class ParkingLotTest {
 
         assertThrows(IllegalArgumentException::class.java) { parkingLot.leave(3) }
     }
+
+    @Test
+    fun `returns true when there is at least one empty slot available`() {
+        val parkingLot = ParkingLot(1)
+
+        assertTrue(parkingLot.hasAvailableSlot())
+    }
+
+    @Test
+    fun `returns false when there is no empty slot available`() {
+        val parkingLot = ParkingLot(0)
+
+        assertFalse(parkingLot.hasAvailableSlot())
+    }
 }

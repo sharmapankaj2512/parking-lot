@@ -31,4 +31,8 @@ class MockReader {
     fun leaveSlot(slotNumber: Int) {
         addCommand("leave $slotNumber")
     }
+
+    fun setDispatchRuleToFillFirst() {
+        addCommand("dispatch_rule fill_first")
+    }
 }

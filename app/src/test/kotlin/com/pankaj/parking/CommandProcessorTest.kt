@@ -10,6 +10,8 @@ class CommandProcessorTest {
     private val parkingLotFactory = mockk<ParkingLotFactory>()
     private val processor = CommandProcessor(reader::read, writer::write, parkingLotFactory)
 
+    //TODO: write tests for all command where dispatcher does not return a parking lot
+
     @Test
     fun `parses valid create parking lot command`() {
         every { parkingLotFactory.make(any()) } answers { ParkingLot(firstArg()) }
@@ -38,6 +40,7 @@ class CommandProcessorTest {
         every { parkingLotFactory.make(any()) } returns parkingLot
         every { parkingLot.numberOfSlots } returns 1
         every { parkingLot.park(capture(capturedCar)) } returns 1
+        every { parkingLot.hasAvailableSlot() } returns true
 
         reader.createParkingLot(1)
         reader.parkCar("MH-10-G-1000", "white")
@@ -56,13 +59,14 @@ class CommandProcessorTest {
         every { parkingLotFactory.make(any()) } returns parkingLot
         every { parkingLot.numberOfSlots } returns 1
         every { parkingLot.park(any()) } throws IllegalArgumentException(Messages.PARKING_FULL)
+        every { parkingLot.hasAvailableSlot() } returns false
 
         reader.createParkingLot(1)
         reader.parkCar("MH-10-G-1000", "white")
         processor.process()
         processor.process()
 
-        assertEquals(Messages.PARKING_FULL, writer.capturedOutput)
+        assertEquals(Messages.ALL_PARKING_LOTS_ARE_FULL, writer.capturedOutput)
     }
 
     @Test
@@ -74,6 +78,7 @@ class CommandProcessorTest {
         every { parkingLot.numberOfSlots } returns 1
         every { parkingLot.park(capture(capturedCar)) } returns 1
         every { parkingLot.status() } returns listOf(Triple(1, "MH-10-G-1000", "white"))
+        every { parkingLot.hasAvailableSlot() } returns true
 
         reader.createParkingLot(1)
         reader.parkCar("MH-10-G-1000", "white")
@@ -93,6 +98,7 @@ class CommandProcessorTest {
         every { parkingLotFactory.make(any()) } returns parkingLot
         every { parkingLot.numberOfSlots } returns 1
         every { parkingLot.park(capture(capturedCar)) } returns 1
+        every { parkingLot.hasAvailableSlot() } returns true
         every { parkingLot.leave(1) } just runs
 
         reader.createParkingLot(1)
@@ -113,6 +119,7 @@ class CommandProcessorTest {
         every { parkingLotFactory.make(any()) } returns parkingLot
         every { parkingLot.numberOfSlots } returns 1
         every { parkingLot.park(capture(capturedCar)) } returns 1
+        every { parkingLot.hasAvailableSlot() } returns true
         every { parkingLot.leave(-1) } throws IllegalArgumentException(Messages.INVALID_SLOT_NUMBER)
 
         reader.createParkingLot(1)
@@ -123,5 +130,13 @@ class CommandProcessorTest {
         processor.process()
 
         assertEquals(Messages.INVALID_SLOT_NUMBER, writer.capturedOutput)
+    }
+
+    @Test
+    fun `parses fill first dispatch command`() {
+        reader.setDispatchRuleToFillFirst()
+        processor.process()
+
+        assertEquals(Messages.DISPATCHER_SET_TO_FILL_FIRST, writer.capturedOutput)
     }
 }
